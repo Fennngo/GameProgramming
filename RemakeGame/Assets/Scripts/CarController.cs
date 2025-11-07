@@ -1,117 +1,110 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class CarController: MonoBehaviour
+public class CarController : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    public float moveSpeed = 30f;
-    public float turnSpeed = 300f;
-    private Rigidbody rb;
+    [Header("Speed / Accel")]
+    public float maxSpeed = 22f;
+    public float accel = 14f;
+    public float brake = 20f;
+    public float dragWhenNoInput = 1.2f;
+    public float dragWhenBraking = 3.0f;
 
-    [Header("Exhaust Settings (Low Poly Style)")]
-    public ParticleSystem exhaustLeft;
-    public ParticleSystem exhaustRight;
-    public float exhaustRateWhileMoving = 25f;
+    [Header("Steering")]
+    public float steerAtZero = 120f;
+    public float steerAtMax = 40f;
+    public float steerResponse = 8f;
+
+    [Header("Grip / Skid")]
+    public float lateralFriction = 8f;
+    public float skidThreshold = 3.0f;
+    public float downforce = 20f;
+
+    [Header("Effects (optional)")]
+    public ParticleSystem exhaustLeft, exhaustRight;
     public float exhaustRateIdle = 0f;
+    public float exhaustRateMax = 40f;
+    public TrailRenderer rearLeftTrail, rearRightTrail;
 
-    [Header("Trail Settings (Low Poly Tire Marks)")]
-    public Transform rearLeftTrackPoint;
-    public Transform rearRightTrackPoint;
-    public LayerMask groundLayer;
-    public float trailYOffset = 0.005f;
+    Rigidbody rb;
+    float throttle;
+    float steer;
+    float targetSteer;
+    Vector3 localVel;
 
-    private TrailRenderer rearLeftTrail;
-    private TrailRenderer rearRightTrail;
-
-    private ParticleSystem.EmissionModule leftEmission;
-    private ParticleSystem.EmissionModule rightEmission;
-
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false;
-
-        if (exhaustLeft != null)
-        {
-            leftEmission = exhaustLeft.emission;
-            leftEmission.rateOverTime = exhaustRateIdle;
-        }
-        if (exhaustRight != null)
-        {
-            rightEmission = exhaustRight.emission;
-            rightEmission.rateOverTime = exhaustRateIdle;
-        }
-
-        InitializeTrailTracks();
-
-        Debug.Log(" CarController_LowPoly Initialized!");
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.centerOfMass = new Vector3(0, -0.5f, 0);
     }
 
-    void InitializeTrailTracks()
+    void Update()
     {
-        if (rearLeftTrackPoint != null)
-        {
-            rearLeftTrail = rearLeftTrackPoint.GetComponent<TrailRenderer>();
-            if (rearLeftTrail != null) rearLeftTrail.emitting = false;
-        }
+        float v = Input.GetAxisRaw("Vertical");
+        float h = Input.GetAxisRaw("Horizontal");
+        throttle = Mathf.MoveTowards(throttle, v, Time.deltaTime * 4f);
+        targetSteer = h;
+        steer = Mathf.Lerp(steer, targetSteer, Time.deltaTime * steerResponse);
 
-        if (rearRightTrackPoint != null)
-        {
-            rearRightTrail = rearRightTrackPoint.GetComponent<TrailRenderer>();
-            if (rearRightTrail != null) rearRightTrail.emitting = false;
-        }
+        float speed01 = Mathf.Clamp01(rb.linearVelocity.magnitude / maxSpeed);
+        float steerDegPerSec = Mathf.Lerp(steerAtZero, steerAtMax, speed01);
+        float turn = steer * steerDegPerSec * Time.deltaTime;
+        rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turn, 0f));
+
+        float exhaustRate = Mathf.Lerp(exhaustRateIdle, exhaustRateMax, Mathf.Abs(throttle));
+        if (exhaustLeft) { var em = exhaustLeft.emission; em.rateOverTime = exhaustRate; }
+        if (exhaustRight) { var em = exhaustRight.emission; em.rateOverTime = exhaustRate; }
     }
 
     void FixedUpdate()
     {
-        float moveInput = Input.GetAxis("Vertical");
-        float turnInput = Input.GetAxis("Horizontal");
+        localVel = transform.InverseTransformVector(rb.linearVelocity);
 
-        rb.AddForce(transform.forward * moveInput * moveSpeed, ForceMode.VelocityChange);
+        float forwardForce = 0f;
 
-        float turn = turnInput * turnSpeed * Time.fixedDeltaTime;
-        rb.MoveRotation(rb.rotation * Quaternion.Euler(Vector3.up * turn));
-
-        HandleExhaust(moveInput);
-        HandleTrailTracks(moveInput);
-    }
-
-    private void HandleExhaust(float moveInput)
-    {
-        bool isMoving = Mathf.Abs(moveInput) > 0.1f;
-
-        if (exhaustLeft != null)
+        float forwardSpeed = Vector3.Dot(rb.linearVelocity, transform.forward);
+        if (forwardSpeed > 2f && throttle < 0f)
         {
-            leftEmission.rateOverTime = isMoving ? exhaustRateWhileMoving : exhaustRateIdle;
+            throttle = -1f;  
+            forwardForce = brake * throttle;  
+        }
+        else
+        {
+            forwardForce = throttle > 0f ? accel * throttle : brake * throttle;
         }
 
-        if (exhaustRight != null)
-        {
-            rightEmission.rateOverTime = isMoving ? exhaustRateWhileMoving : exhaustRateIdle;
-        }
-    }
+      
+        float drag = (Mathf.Approximately(throttle, 0f)) ? dragWhenNoInput : (throttle < 0f ? dragWhenBraking : 0f);
+        Vector3 vel = rb.linearVelocity * (1f / (1f + drag * Time.fixedDeltaTime));
+        rb.linearVelocity = vel;
 
-    private void UpdateTrack(TrailRenderer tr, Transform trackPoint, bool isMoving)
-    {
-        if (tr == null || trackPoint == null) return;
+        rb.AddForce(transform.forward * forwardForce, ForceMode.VelocityChange);
 
-        RaycastHit hit;
-        bool onGround = Physics.Raycast(trackPoint.position + Vector3.up * 0.1f, Vector3.down, out hit, 0.3f, groundLayer);
+        bool handbrake = Input.GetKey(KeyCode.Space);  
+        float grip = handbrake ? lateralFriction * 0.2f : lateralFriction;  
 
-        tr.emitting = isMoving && onGround;
+    
+        Vector3 worldRight = transform.right;
+        float lateralSpeed = Vector3.Dot(rb.linearVelocity, worldRight);
+        Vector3 lateralCancel = -worldRight * lateralSpeed * grip;
+        rb.AddForce(lateralCancel, ForceMode.Acceleration);
+   
+        rb.AddForce(-Vector3.up * downforce * rb.linearVelocity.magnitude, ForceMode.Acceleration);
 
-        if (onGround)
-        {
-            Vector3 pos = tr.transform.position;
-            pos.y = hit.point.y + trailYOffset;
-            tr.transform.position = pos;
-        }
-    }
+        Vector3 fwd = transform.forward * Vector3.Dot(rb.linearVelocity, transform.forward);
+        fwd = Vector3.ClampMagnitude(fwd, maxSpeed);
+        Vector3 side = worldRight * Vector3.Dot(rb.linearVelocity, worldRight);
+        rb.linearVelocity = fwd + side;
 
-    private void HandleTrailTracks(float moveInput)
-    {
-        bool isMoving = Mathf.Abs(moveInput) > 0.1f;
-        UpdateTrack(rearLeftTrail, rearLeftTrackPoint, isMoving);
-        UpdateTrack(rearRightTrail, rearRightTrackPoint, isMoving);
+        bool skidding = Mathf.Abs(lateralSpeed) > skidThreshold && rb.linearVelocity.magnitude > 5f;
+        if (rearLeftTrail) rearLeftTrail.emitting = skidding;
+        if (rearRightTrail) rearRightTrail.emitting = skidding;
+
+      
+        if (Time.frameCount % 15 == 0) Debug.Log($"spd={rb.linearVelocity.magnitude:F1}  throttle={throttle:F2}");
     }
 }
+
+

@@ -129,11 +129,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 428190314332906507, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: m_Drag
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 428190314332906507, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: m_AngularDrag
-      value: 0.5
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 1729770517058189889, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: m_LocalScale.x
@@ -188,6 +188,22 @@ PrefabInstance:
       value: Car
       objectReference: {fileID: 0}
     - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: accel
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: brake
+      value: 24
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: maxSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: downforce
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: moveSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -196,13 +212,37 @@ PrefabInstance:
       value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: steerAtMax
+      value: 55
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: exhaustLeft
       value: 
       objectReference: {fileID: 1694633158}
     - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: steerAtZero
+      value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: exhaustRight
       value: 
       objectReference: {fileID: 1696575173}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: skidThreshold
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: dragWhenBraking
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: dragWhenNoInput
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
+      propertyPath: lateralFriction
+      value: 4.5
+      objectReference: {fileID: 0}
     - target: {fileID: 9210146272815436288, guid: 0e465823a3670fd4b94506d0cee1a653, type: 3}
       propertyPath: groundLayer.m_Bits
       value: 8
@@ -322,7 +362,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.30070576, y: 0, z: 0, w: 0.953717}
-  m_LocalPosition: {x: 0, y: 5.5, z: -2}
+  m_LocalPosition: {x: 0, y: 5.5, z: -4}
   m_LocalScale: {x: 0.6753714, y: 0.84799063, z: 0.23478292}
   m_ConstrainProportionsScale: 0
   m_Children: []
