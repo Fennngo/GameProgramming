@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1316189581859551957}
   - component: {fileID: 3816905714020679516}
+  - component: {fileID: -7854345386698382587}
   m_Layer: 0
   m_Name: Trail
   m_TagString: Untagged
@@ -139,3 +140,21 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &-7854345386698382587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100160248911454026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6efa01f1d264eb046becd853892cde44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  car: {fileID: 0}
+  ground:
+    serializedVersion: 2
+    m_Bits: 0
+  rayDistance: 1
+  yOffset: 0.005

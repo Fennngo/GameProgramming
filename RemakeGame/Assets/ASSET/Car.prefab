@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1729770517058189889}
   - component: {fileID: 487744378567131760}
   - component: {fileID: 768578186106964655}
-  - component: {fileID: 7342812817316955156}
   - component: {fileID: 428190314332906507}
   - component: {fileID: 9210146272815436288}
   m_Layer: 0
@@ -89,27 +88,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7342812817316955156
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8612471519016438252}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &428190314332906507
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -149,15 +127,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d7c06f779c522b42a2543c3656e5dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 30
-  turnSpeed: 300
+  maxSpeed: 22
+  accel: 14
+  brake: 20
+  dragWhenNoInput: 1.2
+  dragWhenBraking: 3
+  steerAtZero: 120
+  steerAtMax: 40
+  steerResponse: 8
+  lateralFriction: 8
+  skidThreshold: 3
+  downforce: 20
   exhaustLeft: {fileID: 0}
   exhaustRight: {fileID: 0}
-  exhaustRateWhileMoving: 25
   exhaustRateIdle: 0
-  rearLeftTrackPoint: {fileID: 0}
-  rearRightTrackPoint: {fileID: 0}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  trailYOffset: 0.005
+  exhaustRateMax: 40
+  rearLeftTrail: {fileID: 0}
+  rearRightTrail: {fileID: 0}
