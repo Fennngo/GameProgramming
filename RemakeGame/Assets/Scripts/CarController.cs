@@ -65,24 +65,21 @@ public class CarController : MonoBehaviour
         localVel = transform.InverseTransformVector(rb.linearVelocity);
 
         float forwardForce = 0f;
-
         float forwardSpeed = Vector3.Dot(rb.linearVelocity, transform.forward);
         if (forwardSpeed > 1f && throttle < 0f)
-        {
-            throttle = -1f;  
-        }
+            throttle = -1f;
 
         if (throttle > 0f) forwardForce = accel * throttle;
         else if (throttle < 0f) forwardForce = brake * throttle;
 
-        float drag = (Mathf.Approximately(throttle, 0f)) ? dragWhenNoInput : (throttle < 0f ? dragWhenBraking : 0f);
-        Vector3 vel = rb.linearVelocity * (1f / (1f + drag * Time.fixedDeltaTime));
-        rb.linearVelocity = vel;
+        float drag = (Mathf.Approximately(throttle, 0f)) ? dragWhenNoInput
+                     : (throttle < 0f ? dragWhenBraking : 0f);
+        rb.linearVelocity *= (1f / (1f + drag * Time.fixedDeltaTime));
 
         rb.AddForce(transform.forward * forwardForce, ForceMode.VelocityChange);
 
         bool handbrake = Input.GetKey(KeyCode.Space);
-        float grip = handbrake ? lateralFriction * 0.35f : lateralFriction; 
+        float grip = handbrake ? lateralFriction * 0.35f : lateralFriction;
         Vector3 worldRight = transform.right;
         float lateralSpeed = Vector3.Dot(rb.linearVelocity, worldRight);
         Vector3 lateralCancel = -worldRight * lateralSpeed * grip;
@@ -94,20 +91,39 @@ public class CarController : MonoBehaviour
         fwd = Vector3.ClampMagnitude(fwd, maxSpeed);
         Vector3 side = worldRight * Vector3.Dot(rb.linearVelocity, worldRight);
         rb.linearVelocity = fwd + side;
+
         bool noSteer = Mathf.Abs(targetSteer) < 0.05f;
-        if (noSteer && !Input.GetKey(KeyCode.Space))
+        if (noSteer && !handbrake)
         {
-            Vector3 right = transform.right;
             side = Vector3.zero;
             rb.linearVelocity = fwd + side;
             var ang = rb.angularVelocity; ang.y = 0f; rb.angularVelocity = ang;
         }
 
-        bool skidding = Mathf.Abs(lateralSpeed) > skidThreshold && rb.linearVelocity.magnitude > 5f;
-        if (rearLeftTrail) rearLeftTrail.emitting = skidding;
-        if (rearRightTrail) rearRightTrail.emitting = skidding;
+        float spd = rb.linearVelocity.magnitude;            
+        float lat = Vector3.Dot(rb.linearVelocity, worldRight); 
+        float yaw = Mathf.Abs(rb.angularVelocity.y);         
+        float steerAbs = Mathf.Abs(targetSteer);
 
-        if (Time.frameCount % 15 == 0) Debug.Log($"spd={rb.linearVelocity.magnitude:F1}  throttle={throttle:F2}");
+
+        const float steerDZ = 0.08f; 
+        float yawEnter = 0.7f; 
+        float skidEnter = skidThreshold;
+
+
+        bool hasIntent = (steerAbs > steerDZ) || handbrake || (yaw > yawEnter);
+
+        bool showSkid = (spd > 5f) && hasIntent && (Mathf.Abs(lat) > skidEnter);
+
+        if (rearLeftTrail) rearLeftTrail.emitting = showSkid;
+        if (rearRightTrail) rearRightTrail.emitting = showSkid;
+
+
+        if (!showSkid) { rearLeftTrail?.Clear(); rearRightTrail?.Clear(); }
+
+        if (Time.frameCount % 20 == 0)
+            Debug.Log($"spd={spd:F1} lat={lat:F2} yaw={yaw:F2} steer={steerAbs:F2} skid={(showSkid ? 1 : 0)}");
     }
+
 
 }
