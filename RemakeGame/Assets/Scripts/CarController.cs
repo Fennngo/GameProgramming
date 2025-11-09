@@ -102,10 +102,10 @@ public class CarController : MonoBehaviour
             rb.linearVelocity = fwd + side;
             var ang = rb.angularVelocity; ang.y = 0f; rb.angularVelocity = ang;
         }
-            bool skidding = (Mathf.Abs(lateralSpeed) > skidThreshold && rb.linearVelocity.magnitude > 5f)|| (handbrake && rb.linearVelocity.magnitude > 5f);
+
+        bool skidding = Mathf.Abs(lateralSpeed) > skidThreshold && rb.linearVelocity.magnitude > 5f;
         if (rearLeftTrail) rearLeftTrail.emitting = skidding;
         if (rearRightTrail) rearRightTrail.emitting = skidding;
-
 
         if (Time.frameCount % 15 == 0) Debug.Log($"spd={rb.linearVelocity.magnitude:F1}  throttle={throttle:F2}");
     }
