@@ -1,25 +1,43 @@
 using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    [Header("Target Vehicle")]
-    public Transform target;
+    public float moveSmoothness;
+    public float rotSmoothness;
 
-    [Header("Follow Settings")]
-    public float followSpeed = 5f;
-    public float rotationSpeed = 5f;
+    public Vector3 moveOffset;
+    public Vector3 rotOffset;
+
+    public Transform carTarget;
 
     void FixedUpdate()
     {
-        if (target == null)
-        {
-            return;
-        }
+        FollowTarget();
+    }
 
-        Vector3 targetPosition = target.position;
-        transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.fixedDeltaTime);
+    void FollowTarget()
+    {
+        HandleMovement();
+        HandleRotation();
+    }
 
-        Quaternion targetRotation = target.rotation;
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+    void HandleMovement()
+    {
+        Vector3 targetPos = new Vector3();
+        targetPos = carTarget.TransformPoint(moveOffset);
+
+        transform.position = Vector3.Lerp(transform.position, targetPos, moveSmoothness * Time.deltaTime);
+    }
+
+    void HandleRotation()
+    {
+        var direction = carTarget.position - transform.position;
+        var rotation = new Quaternion();
+
+        rotation = Quaternion.LookRotation(direction + rotOffset, Vector3.up);
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotSmoothness * Time.deltaTime);
     }
 }
