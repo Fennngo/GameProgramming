@@ -19,31 +19,31 @@ public class CarSounds : MonoBehaviour
     {
         carAudio = GetComponent<AudioSource>();
         carRb = GetComponent<Rigidbody>();
-    }
 
-    void Update()
-    {
-        EngineSound();
-    }
-
-    void EngineSound()
-    {
-        currentSpeed = carRb.linearVelocity.magnitude;
-        pitchFromCar = carRb.linearVelocity.magnitude / 60f;
-
-        if (currentSpeed < minSpeed)
+        if (carAudio.isPlaying && carRb.linearVelocity.magnitude <= minSpeed)
         {
+            carAudio.Stop();
+        }
+    }
+
+    void FixedUpdate()
+    {
+        float currentSpeed = carRb.linearVelocity.magnitude;
+        if (currentSpeed <= minSpeed)
+        {
+            if (carAudio.isPlaying)
+                carAudio.Stop();
+
             carAudio.pitch = minPitch;
+            return;
         }
-
-        if (currentSpeed > minSpeed && currentSpeed < maxSpeed)
+        if (!carAudio.isPlaying)
         {
-            carAudio.pitch = minPitch + pitchFromCar;
+            if (carAudio.clip != null)
+                carAudio.Play();
         }
+        float t = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
+        carAudio.pitch = Mathf.Lerp(minPitch, maxPitch, t);
 
-        if (currentSpeed > maxSpeed)
-        {
-            carAudio.pitch = maxPitch;
-        }
     }
 }

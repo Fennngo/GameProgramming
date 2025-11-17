@@ -43,6 +43,11 @@ public class BigCarController : MonoBehaviour
     {
         GetInputs();
         AnimateWheels();
+
+        float speed = carRb.linearVelocity.magnitude;
+
+        Debug.Log("speed: " + speed.ToString("F2") + " m/s");
+
     }
 
     void LateUpdate()
@@ -107,5 +112,7 @@ public class BigCarController : MonoBehaviour
             wheel.wheelModel.transform.rotation = rot;
         }
     }
+
+
 
 }
