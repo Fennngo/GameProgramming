@@ -15,6 +15,7 @@ public class BigCarController : MonoBehaviour
         public GameObject wheelModel;
         public WheelCollider wheelCollider;
         public GameObject wheelEffectObj;
+        public ParticleSystem smokeParticle;
         public Axel axel;
     }
     
@@ -122,6 +123,7 @@ public class BigCarController : MonoBehaviour
             if (Input.GetKey(KeyCode.Space) && wheel.axel == Axel.Rear & wheel.wheelCollider.isGrounded == true && carRb.linearVelocity.magnitude >= 10.0f)
             {
                 wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = true;
+                wheel.smokeParticle.Emit(1);
             }
             else
             {
