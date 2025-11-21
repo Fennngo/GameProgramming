@@ -14,6 +14,7 @@ public class BigCarController : MonoBehaviour
     {
         public GameObject wheelModel;
         public WheelCollider wheelCollider;
+        public GameObject wheelEffectObj;
         public Axel axel;
     }
     
@@ -43,6 +44,7 @@ public class BigCarController : MonoBehaviour
     {
         GetInputs();
         AnimateWheels();
+        Wheeleffects();
 
         float speed = carRb.linearVelocity.magnitude;
 
@@ -113,6 +115,20 @@ public class BigCarController : MonoBehaviour
         }
     }
 
+    void Wheeleffects()
+    {
+        foreach (var wheel in wheels)
+        {
+            if (Input.GetKey(KeyCode.Space) && wheel.axel == Axel.Rear & wheel.wheelCollider.isGrounded == true && carRb.linearVelocity.magnitude >= 10.0f)
+            {
+                wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = true;
+            }
+            else
+            {
+                wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = false;
+            }
+        }
+    }
 
 
 }
