@@ -15,7 +15,6 @@ Material:
   - _BACKGROUNDMODE_COLORS
   - _ENABLEBUILTINFOG_ON
   - _ENABLECLOUDSROTATION_ON
-  - _ENABLECLOUDS_ON
   - _ENABLESTARSTWINKLING_ON
   - _ENABLESTARS_ON
   - _ENABLESUN_ON
@@ -221,7 +220,7 @@ Material:
     - _DstBlend: 0
     - _Enable1Twinkling: 0
     - _EnableBuiltinFog: 1
-    - _EnableClouds: 1
+    - _EnableClouds: 0
     - _EnableCloudsRotation: 1
     - _EnableDirectionLight: 0
     - _EnableFogMessage: 0
