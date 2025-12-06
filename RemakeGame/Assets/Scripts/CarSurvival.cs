@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class CarSurvival : MonoBehaviour
 {
     [Header("UI")]
-    public Image fuelImage;
+    public Image fuelImage;      
     public Image sanityImage;
 
     [Header("Spawn Point")]
@@ -54,12 +54,7 @@ public class CarSurvival : MonoBehaviour
         if (isInLight)
         {
             timeSpentInLight += Time.deltaTime;
-
-            if (timeSpentInLight < safeZoneDelay)
-            {
-                currentSanity -= sanityDrainRate * Time.deltaTime;
-            }
-            else
+            if (timeSpentInLight > safeZoneDelay)
             {
                 currentSanity += sanityRecoverRate * Time.deltaTime;
             }
@@ -69,6 +64,7 @@ public class CarSurvival : MonoBehaviour
             timeSpentInLight = 0f;
             currentSanity -= sanityDrainRate * Time.deltaTime;
         }
+
         currentSanity = Mathf.Clamp(currentSanity, 0, maxSanity);
     }
 
