@@ -47,10 +47,10 @@ Material:
     m_Floats:
     - _Alpha: 1
     - _Contrast: 1
-    - _IsOpen: 1
+    - _IsOpen: 0
     - _Size: 0.6
     - _Smoothness: 0
-    - _Speed: 0.9999988
+    - _Speed: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 0}
     - _Tiling: {r: 3, g: 7, b: 0, a: 0}
