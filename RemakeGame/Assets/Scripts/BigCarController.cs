@@ -35,6 +35,8 @@ public class BigCarController : MonoBehaviour
     public float effectStartSpeed = 30f;
     public float effectFullSpeed = 50f;
 
+    private float _currentShaderVal = 0f;
+
     float moveInput;
     float steerInput;
 
@@ -57,24 +59,7 @@ public class BigCarController : MonoBehaviour
 
         Debug.Log("speed: " + speed.ToString("F2") + " m/s");
 
-        if (speedLineMat != null)
-        {
-            float currentSpeed = carRb.linearVelocity.magnitude; 
-
-         
-            if (currentSpeed > effectStartSpeed)
-            {
-                speedLineMat.SetInt("_IsOpen", 1); 
-
-                float t = Mathf.InverseLerp(effectStartSpeed, effectFullSpeed, currentSpeed);
-                speedLineMat.SetFloat("_Speed", t);
-            }
-            else
-            {
-                speedLineMat.SetInt("_IsOpen", 0); 
-                speedLineMat.SetFloat("_Speed", 0);
-            }
-        }
+        HandleSpeedEffects(speed);
 
     }
 
@@ -156,6 +141,40 @@ public class BigCarController : MonoBehaviour
             }
         }
     }
-    
+
+    void HandleSpeedEffects(float currentSpeed)
+    {
+        if (speedLineMat == null) return;
+
+        float targetSpeedVal = 0f;
+        int isOpen = 0;
+
+
+        if (currentSpeed > effectFullSpeed * 2)
+        {
+            isOpen = 1;
+            targetSpeedVal = 2f;
+        }
+        else if (currentSpeed > effectFullSpeed)
+        {
+            isOpen = 1;
+            targetSpeedVal = 1f;
+        }
+        else if (currentSpeed > effectStartSpeed)
+        {
+            isOpen = 1;
+            targetSpeedVal = 0.5f;
+        }
+        else
+        {
+            isOpen = 0;
+            targetSpeedVal = 0f;
+        }
+
+        speedLineMat.SetInt("_IsOpen", isOpen);
+
+        speedLineMat.SetFloat("_Speed", targetSpeedVal);
+    }
+
 
 }
