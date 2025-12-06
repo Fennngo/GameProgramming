@@ -30,6 +30,16 @@ public class BigCarController : MonoBehaviour
 
     public List<Wheel> wheels;
 
+    [Header("Speed Effects")]
+    public Transform cameraObj;
+    public Material speedLineMat;
+    public float effectStartSpeed = 30f;
+    public float effectFullSpeed = 50f;
+    public float shakePower = 0.1f;
+
+    private float _currentShaderVal = 0f;
+    private Vector3 _originalCamPos;
+
     float moveInput;
     float steerInput;
 
@@ -39,6 +49,12 @@ public class BigCarController : MonoBehaviour
     {
         carRb = GetComponent<Rigidbody>();
         carRb.centerOfMass = _centerOfMass;
+
+        if (cameraObj == null && Camera.main != null)
+            cameraObj = Camera.main.transform;
+
+        if (cameraObj != null)
+            _originalCamPos = cameraObj.localPosition;
     }
 
     void Update()
@@ -131,6 +147,31 @@ public class BigCarController : MonoBehaviour
             }
         }
     }
+    void HandleSpeedEffects(float currentSpeed)
+    {
+        if (speedLineMat == null) return;
+        float targetVal = 0f;
+        int isOpen = 0;
 
+        if (currentSpeed > effectStartSpeed)
+        {
+            isOpen = 1;
+            targetVal = Mathf.InverseLerp(effectStartSpeed, effectFullSpeed, currentSpeed);
+        }
+
+        _currentShaderVal = Mathf.Lerp(_currentShaderVal, targetVal, Time.deltaTime * 5f);
+        speedLineMat.SetInt("_IsOpen", isOpen);
+        speedLineMat.SetFloat("_Speed", _currentShaderVal);
+        if (cameraObj != null && currentSpeed > effectStartSpeed)
+        {
+            Vector3 shake = UnityEngine.Random.insideUnitSphere * shakePower;
+            if (currentSpeed > effectFullSpeed) shake *= 1.5f;
+            cameraObj.localPosition = _originalCamPos + shake;
+        }
+        else if (cameraObj != null)
+        {
+            cameraObj.localPosition = Vector3.Lerp(cameraObj.localPosition, _originalCamPos, Time.deltaTime * 5f);
+        }
+    }
 
 }
