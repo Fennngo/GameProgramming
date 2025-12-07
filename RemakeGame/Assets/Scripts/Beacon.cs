@@ -8,6 +8,7 @@ public class BeaconSystem : MonoBehaviour
     public float detectRange = 15f;       
     public float holdDuration = 3f;      
     public Color completedColor = Color.green; 
+
     [Header("Audio")]
     public AudioClip progressClip; 
     public AudioClip successClip;  
@@ -15,6 +16,7 @@ public class BeaconSystem : MonoBehaviour
     [Header("Bindings")]
     public Transform playerCar;
     public GameObject uiPrompt;
+    public GameObject downloadingPrompt;
     public Slider uiProgressBar;
 
     private float currentTimer = 0f;
@@ -32,6 +34,7 @@ public class BeaconSystem : MonoBehaviour
         audioSource.loop = false;
 
         if (uiPrompt != null) uiPrompt.SetActive(false);
+        if (downloadingPrompt != null) downloadingPrompt.SetActive(false);
         if (uiProgressBar != null) uiProgressBar.gameObject.SetActive(false);
     }
 
@@ -43,7 +46,7 @@ public class BeaconSystem : MonoBehaviour
 
         if (distance <= detectRange)
         {
-            uiPrompt.SetActive(true);
+            if (uiProgressBar != null) uiProgressBar.gameObject.SetActive(true);
 
             if (Input.GetKeyDown(KeyCode.E))
             {
@@ -52,8 +55,9 @@ public class BeaconSystem : MonoBehaviour
 
             if (Input.GetKey(KeyCode.E))
             {
+                uiPrompt.SetActive(false);
+                if (downloadingPrompt != null) downloadingPrompt.SetActive(true);
                 uiProgressBar.gameObject.SetActive(true);
-
                 currentTimer += Time.deltaTime;
                 uiProgressBar.value = currentTimer / holdDuration;
 
@@ -62,69 +66,72 @@ public class BeaconSystem : MonoBehaviour
                     CompleteBeacon();
                 }
             }
-
-            if (Input.GetKeyUp(KeyCode.E))
+            else
             {
-                StopCollectingSound();
-                ResetProgress();
+                uiPrompt.SetActive(true);
+                if (downloadingPrompt != null) downloadingPrompt.SetActive(false);
+
+                if (Input.GetKeyUp(KeyCode.E))
+                {
+                    StopCollectingSound();
+                    ResetProgress();
+                }
             }
         }
         else
         {
-            if (isCollecting)
-            {
-                StopCollectingSound();
-                ResetProgress();
-            }
             uiPrompt.SetActive(false);
+            if (downloadingPrompt != null) downloadingPrompt.SetActive(false);
+            if (uiProgressBar != null) uiProgressBar.gameObject.SetActive(false);
         }
-    }
+}
 
-    void StartCollectingSound()
-    {
-        isCollecting = true;
-
-        audioSource.clip = progressClip;
-        audioSource.loop = false;
-        audioSource.Play();
-    }
-
-    void StopCollectingSound()
-    {
-        isCollecting = false;
-
-        audioSource.Stop();
-    }
-
-    void ResetProgress()
-    {
-        currentTimer = 0;
-        if (uiProgressBar != null)
+        void StartCollectingSound()
         {
-            uiProgressBar.value = 0;
-            uiProgressBar.gameObject.SetActive(false);
+            isCollecting = true;
+
+            audioSource.clip = progressClip;
+            audioSource.loop = false;
+            audioSource.Play();
         }
-    }
 
-    void CompleteBeacon()
-    {
-        isCompleted = true;
-        isCollecting = false;
-
-        audioSource.Stop();
-
-        if (successClip != null)
+        void StopCollectingSound()
         {
-            audioSource.PlayOneShot(successClip);
+            isCollecting = false;
+
+            audioSource.Stop();
         }
 
-        uiPrompt.SetActive(false);
+        void ResetProgress()
+        {
+            currentTimer = 0;
+            if (uiProgressBar != null)
+            {
+                uiProgressBar.value = 0;
+            }
+        }
+
+        void CompleteBeacon()
+        {
+            isCompleted = true;
+            isCollecting = false;
+
+            audioSource.Stop();
+
+            if (successClip != null)
+            {
+                audioSource.PlayOneShot(successClip);
+            }
+
+        if (uiPrompt != null) uiPrompt.SetActive(false);
+        if (downloadingPrompt != null) downloadingPrompt.SetActive(false); 
         if (uiProgressBar != null) uiProgressBar.gameObject.SetActive(false);
 
         if (meshRenderer != null)
-        {
-            meshRenderer.material.color = completedColor;
-        }
+            {
+                meshRenderer.material.color = completedColor;
+            }
 
-    }
+        }
+    
 }
