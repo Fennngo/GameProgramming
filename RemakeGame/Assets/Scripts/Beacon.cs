@@ -132,6 +132,12 @@ public class BeaconSystem : MonoBehaviour
                 meshRenderer.material.color = completedColor;
             }
 
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddBeaconProgress();
         }
+
+    }
+
     
 }
