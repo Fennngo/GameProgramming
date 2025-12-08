@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Scene Scanning
-  m_Shader: {fileID: -6465566751694194690, guid: d26a93ea3171d5e4fa23e4803baf4982, type: 3}
+  m_Name: Emission
+  m_Shader: {fileID: -6465566751694194690, guid: 89fc9f7e6bccff548936d0e6f37a7a79, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -40,12 +40,12 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Strength: 6.85
+    - _Scale: 0
     m_Colors:
-    - _Color: {r: 0.77594024, g: 2.5438054, b: 1.6464508, a: 1}
+    - _Color: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &7203354702699986992
+--- !u!114 &4596130100105917388
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
