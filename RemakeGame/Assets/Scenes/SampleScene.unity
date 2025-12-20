@@ -161160,8 +161160,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSmoothness: 5
   rotSmoothness: 7
-  moveOffset: {x: 0, y: 5, z: -12}
-  rotOffset: {x: 0, y: 0, z: 5}
+  moveOffset: {x: 0, y: 7.72, z: -18.6}
+  rotOffset: {x: 0, y: 0, z: 1.17}
   carTarget: {fileID: 1289791185}
   cam: {fileID: 1424587996}
   pullBackDistance: 4
