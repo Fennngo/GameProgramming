@@ -337,10 +337,10 @@ Material:
     - _Eq: {r: 1, g: 0.6769777, b: 0.330882, a: 0}
     - _EquatorColor: {r: 0, g: 0, b: 0, a: 1}
     - _Ground: {r: 0.4779411, g: 0.43111518, b: 0.23545504, a: 0}
-    - _GroundColor: {r: 0.46323532, g: 0.46323532, b: 0.46323532, a: 1}
+    - _GroundColor: {r: 0.84276724, g: 0.8295161, b: 0.8295161, a: 1}
     - _MoonColor: {r: 1, g: 1, b: 1, a: 1}
     - _Sky: {r: 0.6691177, g: 0.29519898, b: 0.29519898, a: 0}
-    - _SkyColor: {r: 0, g: 0.37254903, b: 0.5514706, a: 1}
+    - _SkyColor: {r: 0, g: 0.24799566, b: 0.5529412, a: 1}
     - _SkyboxRotationAxis: {r: 0, g: 1, b: 0, a: 0}
     - _Skycol: {r: 0.27941146, g: 0.64219046, b: 1, a: 0}
     - _StarsRotationAxis: {r: 0, g: 1, b: 0, a: 0}

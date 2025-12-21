@@ -3,119 +3,163 @@ using System.Collections;
 
 public class CarSounds : MonoBehaviour
 {
-    public float minSpeed;
-    public float maxSpeed;
+    [Header("Audio Sources")]
+    public AudioSource accelAudio;   
+    public AudioSource decelAudio;    
+    public AudioSource brakeAudio;    
+
+    public float minSpeed = 1f;
+    public float maxSpeed = 50f;
+    public float brakeSpeedThreshold = 5f;
+    public float inputThreshold = 0.1f;
+    public float fadeDuration = 0.3f;
+    public float minPitch = 0.8f;
+    public float maxPitch = 2.0f;
+
+    [Header("Engine Max Volume (Important!)")]
+    public float engineMaxVolume = 1f;  
+
     private float currentSpeed;
     private Rigidbody carRb;
-    private AudioSource carAudio; 
-    public AudioSource brakeAudio; 
-    public float minPitch;
-    public float maxPitch;
-    private float pitchFromCar;
-    public float fadeDuration = 0.3f; 
-    private bool isHandbraking = false;
-    private Coroutine engineFadeCoroutine;
-    private Coroutine brakeFadeCoroutine;
+
+    private enum EngineState { Idle, Accelerating, Decelerating }
+    private EngineState currentEngineState = EngineState.Idle;
+
+    private Coroutine accelFadeCoroutine;
+    private Coroutine decelFadeCoroutine;
+
+    private bool isBraking;
+    private bool brakePressedLastFrame = false;
+    private float moveInput;
 
     void Start()
     {
-        carAudio = GetComponent<AudioSource>();
         carRb = GetComponent<Rigidbody>();
-        if (carAudio.isPlaying && carRb.linearVelocity.magnitude <= minSpeed)
+
+        AudioSource[] sources = GetComponents<AudioSource>();
+        if (sources.Length >= 3)
         {
-            carAudio.Stop();
+            accelAudio = sources[0];
+            decelAudio = sources[1];
+            brakeAudio = sources[2];
+        }
+        else
+        {
+            Debug.LogError("BigCar need 3  AudioSource ");
         }
 
-        if (carAudio != null)
+        if (accelAudio) accelAudio.loop = true;
+        if (decelAudio) decelAudio.loop = true;
+        if (brakeAudio) brakeAudio.loop = false;
+
+        StopEngineAudioImmediate();
+    }
+
+    void Update()
+    {
+        isBraking = Input.GetKey(KeyCode.Space);
+        moveInput = Input.GetAxis("Vertical");
+
+        if (isBraking && !brakePressedLastFrame && currentSpeed > brakeSpeedThreshold)
         {
-            carAudio.loop = true; 
+            PlayBrakeSound();
         }
-        if (brakeAudio != null)
-        {
-            brakeAudio.loop = true; 
-            brakeAudio.Stop(); 
-        }
+        brakePressedLastFrame = isBraking;
     }
 
     void FixedUpdate()
     {
-        currentSpeed = carRb.linearVelocity.magnitude;
-        bool handbrake = Input.GetKey(KeyCode.Space);
+        currentSpeed = carRb.linearVelocity.magnitude; 
 
-        if (handbrake && !isHandbraking)
+        EngineState newState = EngineState.Idle;
+
+        if (moveInput > inputThreshold && currentSpeed > minSpeed)
         {
-            isHandbraking = true;
-            StartBrakeAudio();
+            newState = EngineState.Accelerating;
         }
-        else if (!handbrake && isHandbraking)
+        else if (Mathf.Abs(moveInput) < inputThreshold && currentSpeed > minSpeed)
         {
-            isHandbraking = false;
-            StopBrakeAudio();
+            newState = EngineState.Decelerating;
         }
 
-        if (!handbrake)
+        if (newState != currentEngineState)
         {
-            if (currentSpeed <= minSpeed)
-            {
-                if (carAudio.isPlaying)
-                    carAudio.Stop();
-                carAudio.pitch = minPitch;
-                return;
-            }
-            if (!carAudio.isPlaying)
-            {
-                if (carAudio.clip != null)
-                    carAudio.Play();
-            }
+            SwitchEngineState(newState);
+            currentEngineState = newState;
+        }
+        if (currentEngineState == EngineState.Accelerating && accelAudio && accelAudio.isPlaying)
+        {
             float t = Mathf.InverseLerp(minSpeed, maxSpeed, currentSpeed);
-            carAudio.pitch = Mathf.Lerp(minPitch, maxPitch, t);
+            accelAudio.pitch = Mathf.Lerp(minPitch, maxPitch, t);
         }
     }
 
-    private void StartBrakeAudio()
+    private void SwitchEngineState(EngineState newState)
     {
-        if (carAudio != null && carAudio.isPlaying)
+        switch (currentEngineState)
         {
-            if (engineFadeCoroutine != null) StopCoroutine(engineFadeCoroutine);
-            engineFadeCoroutine = StartCoroutine(FadeAudio(carAudio, false, fadeDuration));
+            case EngineState.Accelerating:
+                if (accelFadeCoroutine != null) StopCoroutine(accelFadeCoroutine);
+                accelFadeCoroutine = StartCoroutine(FadeEngineAudio(accelAudio, false));
+                break;
+            case EngineState.Decelerating:
+                if (decelFadeCoroutine != null) StopCoroutine(decelFadeCoroutine);
+                decelFadeCoroutine = StartCoroutine(FadeEngineAudio(decelAudio, false));
+                break;
         }
-        if (brakeAudio != null)
+
+        switch (newState)
         {
-            if (brakeFadeCoroutine != null) StopCoroutine(brakeFadeCoroutine);
-            brakeFadeCoroutine = StartCoroutine(FadeAudio(brakeAudio, true, fadeDuration));
+            case EngineState.Accelerating:
+                if (accelFadeCoroutine != null) StopCoroutine(accelFadeCoroutine);
+                accelFadeCoroutine = StartCoroutine(FadeEngineAudio(accelAudio, true));
+                break;
+            case EngineState.Decelerating:
+                if (decelFadeCoroutine != null) StopCoroutine(decelFadeCoroutine);
+                decelFadeCoroutine = StartCoroutine(FadeEngineAudio(decelAudio, true));
+                break;
         }
     }
 
-    private void StopBrakeAudio()
+    private void PlayBrakeSound()
     {
-        if (brakeAudio != null && brakeAudio.isPlaying)
+        if (brakeAudio != null && brakeAudio.clip != null)
         {
-            if (brakeFadeCoroutine != null) StopCoroutine(brakeFadeCoroutine);
-            brakeFadeCoroutine = StartCoroutine(FadeAudio(brakeAudio, false, fadeDuration));
-        }
-        if (carAudio != null)
-        {
-            if (engineFadeCoroutine != null) StopCoroutine(engineFadeCoroutine);
-            engineFadeCoroutine = StartCoroutine(FadeAudio(carAudio, true, fadeDuration));
+            brakeAudio.volume = 1f;
+            brakeAudio.pitch = Random.Range(0.9f, 1.1f); 
+            brakeAudio.PlayOneShot(brakeAudio.clip);
         }
     }
 
-    private IEnumerator FadeAudio(AudioSource audio, bool fadeIn, float duration)
+    private IEnumerator FadeEngineAudio(AudioSource audio, bool fadeIn)
     {
-        float startVolume = fadeIn ? 0f : audio.volume;
-        float endVolume = fadeIn ? 1f : 0f; 
+        if (audio == null) yield break;
 
-        if (fadeIn && !audio.isPlaying) audio.Play();
+        float startVolume = fadeIn ? 0f : engineMaxVolume;
+        float endVolume = fadeIn ? engineMaxVolume : 0f;
 
-        float time = 0f;
-        while (time < duration)
+        if (fadeIn && !audio.isPlaying)
+            audio.Play();
+
+        audio.volume = startVolume;
+
+        float timer = 0f;
+        while (timer < fadeDuration)
         {
-            time += Time.deltaTime;
-            audio.volume = Mathf.Lerp(startVolume, endVolume, time / duration);
+            timer += Time.deltaTime;
+            audio.volume = Mathf.Lerp(startVolume, endVolume, timer / fadeDuration);
             yield return null;
         }
 
         audio.volume = endVolume;
-        if (!fadeIn) audio.Stop();
+
+        if (!fadeIn)
+            audio.Stop();
+    }
+
+    private void StopEngineAudioImmediate()
+    {
+        if (accelAudio) { accelAudio.Stop(); accelAudio.volume = 0f; }
+        if (decelAudio) { decelAudio.Stop(); decelAudio.volume = 0f; }
     }
 }
