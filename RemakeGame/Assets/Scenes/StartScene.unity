@@ -865,7 +865,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Sonar Survival
+  m_Text: eCHO DRIVE
 --- !u!222 &789195918
 CanvasRenderer:
   m_ObjectHideFlags: 0
