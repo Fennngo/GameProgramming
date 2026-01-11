@@ -48,7 +48,6 @@ public class SonarAbility : MonoBehaviour
 
         if (audioSource != null && scanSound != null)
         {
-            Debug.Log("ÕıÔÚ²¥·ÅÉùÒô£º" + scanSound.name);
             audioSource.PlayOneShot(scanSound, 3.0f);
         }
     }

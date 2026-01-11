@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+
 public class BigCarController : MonoBehaviour
 {
     public enum Axel
@@ -18,64 +19,49 @@ public class BigCarController : MonoBehaviour
         public ParticleSystem smokeParticle;
         public Axel axel;
     }
-    
 
     public float maxAcceleration = 30.0f;
     public float brakeAcceleration = 50.0f;
-
     public float turnSensitivity = 1.0f;
     public float maxSteerAngle = 30.0f;
-
     public Vector3 _centerOfMass;
-
     public List<Wheel> wheels;
-
     [Header("Speed Effects")]
     public Material speedLineMat;
     public float effectStartSpeed = 30f;
     public float effectFullSpeed = 50f;
-
+    [Header("Wheel Smoke Effects")]
+    public float slipThreshold = 0.2f; 
     private float _currentShaderVal = 0f;
 
     float moveInput;
     float steerInput;
-
     private Rigidbody carRb;
-      
+
     void Start()
     {
         carRb = GetComponent<Rigidbody>();
         carRb.centerOfMass = _centerOfMass;
-
     }
-
     void Update()
     {
         GetInputs();
         AnimateWheels();
-        Wheeleffects();
-
+        WheelEffects();
         float speed = carRb.linearVelocity.magnitude;
-
-        Debug.Log("speed: " + speed.ToString("F2") + " m/s");
-
         HandleSpeedEffects(speed);
-
     }
-
     void LateUpdate()
     {
         Move();
         Steer();
-        Barke();
+        Brake();
     }
-
     void GetInputs()
-    {    
+    {
         moveInput = Input.GetAxis("Vertical");
         steerInput = Input.GetAxis("Horizontal");
     }
-
     void Move()
     {
         foreach (var wheel in wheels)
@@ -94,18 +80,15 @@ public class BigCarController : MonoBehaviour
             }
         }
     }
-
-    void Barke()
+    void Brake()
     {
         if (Input.GetKey(KeyCode.Space) || moveInput == 0)
         {
             foreach (var wheel in wheels)
             {
                 wheel.wheelCollider.brakeTorque = 300 * brakeAcceleration * Time.deltaTime;
-
             }
         }
-
         else
         {
             foreach (var wheel in wheels)
@@ -125,31 +108,48 @@ public class BigCarController : MonoBehaviour
             wheel.wheelModel.transform.rotation = rot;
         }
     }
-
-    void Wheeleffects()
+    void WheelEffects()
     {
         foreach (var wheel in wheels)
         {
-            if (Input.GetKey(KeyCode.Space) && wheel.axel == Axel.Rear & wheel.wheelCollider.isGrounded == true && carRb.linearVelocity.magnitude >= 10.0f)
+            if (wheel.axel == Axel.Rear && wheel.wheelCollider.isGrounded)
             {
-                wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = true;
-                wheel.smokeParticle.Emit(1);
-            }
-            else
-            {
-                wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = false;
+                WheelHit hit;
+                if (wheel.wheelCollider.GetGroundHit(out hit))
+                {
+                    float forwardSlip = Mathf.Abs(hit.forwardSlip);
+                    float sidewaysSlip = Mathf.Abs(hit.sidewaysSlip);
+                    bool isSlipping = forwardSlip > slipThreshold || sidewaysSlip > slipThreshold;
+
+                    bool isBraking = Input.GetKey(KeyCode.Space) && carRb.linearVelocity.magnitude >= 10.0f;
+
+                   
+                    if (isSlipping || isBraking)
+                    {
+                        if (wheel.wheelEffectObj != null)
+                            wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = true;
+                        if (wheel.smokeParticle != null)
+                            wheel.smokeParticle.Emit(1);
+                    }
+                    else
+                    {
+                        if (wheel.wheelEffectObj != null)
+                            wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = false;
+                    }
+                }
+                else
+                {
+                    if (wheel.wheelEffectObj != null)
+                        wheel.wheelEffectObj.GetComponentInChildren<TrailRenderer>().emitting = false;
+                }
             }
         }
     }
-
     void HandleSpeedEffects(float currentSpeed)
     {
         if (speedLineMat == null) return;
-
         float targetSpeedVal = 0f;
         int isOpen = 0;
-
-
         if (currentSpeed > effectFullSpeed * 2)
         {
             isOpen = 1;
@@ -170,11 +170,7 @@ public class BigCarController : MonoBehaviour
             isOpen = 0;
             targetSpeedVal = 0f;
         }
-
         speedLineMat.SetInt("_IsOpen", isOpen);
-
         speedLineMat.SetFloat("_Speed", targetSpeedVal);
     }
-
-
 }
